@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+from model_integrated import detect_faces_and_send
 import threading
 import time
 
@@ -14,6 +15,7 @@ def check_sleepiness():
     while True:
         time.sleep(5)
         print('Emitting sleepy notification')  # Confirm it reaches this point
+        
         socketio.emit('sleepy_notification', {'sleepy': True})
 
 @app.route('/')
