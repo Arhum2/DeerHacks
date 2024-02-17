@@ -14,9 +14,6 @@ def get_data():
         message += log.readline().strip()
     data = {"message": message} 
     response =  jsonify(data)
-    response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-    response.headers.add("Access-Control-Allow-Methods", "GET")
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
     return response
 
 def run_flask():
