@@ -16,18 +16,10 @@ def check_sleepiness():
 
 @app.route('/')
 def index():
-    return "Sleepiness Detection Server"
-
-@socketio.on('connect')
-def test_connect():
-    print('Client connected')
-
-@socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected') 
+    print('Sleepiness check thread started')  # Confirm the thread starts 
 
 if __name__ == '__main__':
     # Start the sleepiness check in a separate thread
-    socketio.start_background_task(check_sleepiness)
-    # Run the Flask app
-    socketio.run(app, port=5000)
+    app.run()
+    detect_faces_and_send()
+    
