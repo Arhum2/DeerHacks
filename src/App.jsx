@@ -113,7 +113,7 @@ const App = () => {
 
           <Box flex="1" minH="100vh">
             <Container maxW="3xl" centerContent paddingTop="4rem">
-              <WebcamFeed onAnalyze={handleAnalysis} />
+              {/* <WebcamFeed onAnalyze={handleAnalysis} /> */}
               <Footer />
             </Container>
             <ChatButton onOpen={openChat} />
