@@ -1,18 +1,26 @@
 // ChatPopup.jsx
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react';
+import {
+    Drawer,
+    DrawerBody,
+    DrawerHeader,
+    DrawerOverlay,
+    DrawerContent,
+    DrawerCloseButton,
+} from '@chakra-ui/react';
 
-const ChatPopup = ({ isOpen, onClose }) => {
+const ChatPopup = ({ isOpen, onClose, children }) => {
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>Chat with us!</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    {/* Chat content goes here. If you're using a third-party chat service, their widget code would go here. */}
-                </ModalBody>
-            </ModalContent>
-        </Modal>
+        <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="md">
+            <DrawerOverlay />
+            <DrawerContent>
+                <DrawerCloseButton />
+                <DrawerHeader>Chat with us!</DrawerHeader>
+                <DrawerBody>
+                    {children}
+                    {/* Insert chat interface here, such as message display and input */}
+                </DrawerBody>
+            </DrawerContent>
+        </Drawer>
     );
 };
 

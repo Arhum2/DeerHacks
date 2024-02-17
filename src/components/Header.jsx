@@ -1,17 +1,25 @@
-import { Heading, Image, Text } from "@chakra-ui/react"
-import logo from '../assets/light-bulb.svg'
-
+import { Flex, Image, Heading } from "@chakra-ui/react";
+import logo from '../assets/light-bulb.svg';
 
 const Header = () => {
-  return (
-    <>
-    <Image src={logo} alt = "logo"
-    width={100} marginBottom ='1rem' />
-        <Heading color="white" marginBottom='1rem'>Study Buddy</Heading>
-     <Heading /> 
-     <Text fontSize={25} textAlign='center'>Need help? Let us know!f</Text>
-     </>
-  )
-}
+    return (
+        <Flex
+            as="nav"
+            align="center"
+            justify="flex-start"
+            wrap="wrap"
+            padding="1rem"
+            bg="blue.600"
+            color="white"
+            width="100%"
+        >
+            {/* Wrap both the Image and Heading in an anchor tag */}
+            <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white' }}>
+                <Image src={logo} alt="logo" boxSize="80px" marginRight="1rem" />
+                <Heading size="lg">Study Buddy</Heading>
+            </a>
+        </Flex>
+    );
+};
 
-export default Header
+export default Header;

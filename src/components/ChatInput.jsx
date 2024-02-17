@@ -31,6 +31,7 @@ const ChatInput = ({ talkToChatbot, loading }) => { // destructuring props here
         value={text}
         onChange={(event) => setText(event.target.value)}
         placeholder="Type your message here..."
+        _placeholder={{ color: 'white' }}
       />
       <Button
         bg="blue.500"
