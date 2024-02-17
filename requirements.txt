@@ -4,3 +4,6 @@ websockets
 imutils
 dlib
 scipy
+flask
+flask_cors
+requests
