@@ -7,7 +7,7 @@ import ChatDisplay from './components/ChatDisplay';
 import io from 'socket.io-client';
 import ChatButton from './components/ChatButton'; // Import your ChatButton component
 import ChatPopup from './components/ChatPopup'; // Import your ChatPopup component
-import WebcamFeed from './components/WebcamFeed';
+// import WebcamFeed from './components/WebcamFeed';
 import { Slide } from '@chakra-ui/react';
 import { Container, Box, Flex, useDisclosure } from '@chakra-ui/react';
 

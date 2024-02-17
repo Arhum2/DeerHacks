@@ -1,26 +1,15 @@
 import datetime as dt
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from imutils import face_utils 
 from imutils.video import VideoStream
-import matplotlib.pyplot as plt
-import matplotlib.animation as animate
-from matplotlib import style 
 import imutils 
 import dlib
 import time 
-import argparse 
 import cv2 
-from playsound import playsound
 from scipy.spatial import distance as dist
-import os 
-import csv
 import numpy as np
-import pandas as pd
 from datetime import datetime
 from scipy.spatial import distance as dist 
-import socketio
-from flask_socketio import SocketIO, emit
+import asyncio
 
 def eye_aspect_ratio(eye):
 	# Vertical eye landmarks
@@ -49,7 +38,7 @@ total_mar=[]
 ts=[]
 total_ts=[]
 
-async def detect_faces_and_send():
+def detect_faces_and_send():
     # Set up WebSocket server
         # Declare a constant which will work as the threshold for EAR value, below which it will be regared as a blink 
     EAR_THRESHOLD = 0.3
@@ -86,7 +75,7 @@ async def detect_faces_and_send():
 
     while True: 
         
-    # Extract a frame 
+        # Extract a frame 
         frame = vs.read()
         cv2.putText(frame, "PRESS 'q' TO EXIT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 3) 
         # Resize the frame 
@@ -143,7 +132,11 @@ async def detect_faces_and_send():
 
                 if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
                     count_sleep += 1
-                    socketio.emit('sleepy_notification', {'sleepy': True})
+                    with open('drowsiness_log.txt', 'w') as file:
+                        file.write('Drowsiness detected!\n')
+                    time.sleep(5)
+                    with open('drowsiness_log.txt', 'w') as file:
+                        file.write('All good!\n')
                     # Add the frame to the dataset ar a proof of drowsy driving
                     #cv2.imwrite("dataset/frame_sleep%d.jpg" % count_sleep, frame)
                     #playsound('sound files/alarm.mp3')
@@ -160,7 +153,12 @@ async def detect_faces_and_send():
                 count_yawn += 1
                 cv2.drawContours(frame, [mouth], -1, (0, 0, 255), 1) 
                 cv2.putText(frame, "DROWSINESS ALERT!", (270, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-                socketio.emit('sleepy_notification', {'sleepy': True})
+                with open('drowsiness_log.txt', 'w') as file:
+                        file.write('Drowsiness detected!\n')
+                time.sleep(2)
+                with open('drowsiness_log.txt', 'w') as file:
+                    file.write('All good!\n')
+                
                 # Add the frame to the dataset ar a proof of drowsy driving
                 #cv2.imwrite("dataset/frame_yawn%d.jpg" % count_yawn, frame)
                 #playsound('sound files/alarm.mp3')
@@ -169,4 +167,5 @@ async def detect_faces_and_send():
     cv2.destroyAllWindows()
     vs.stop()
 # Run the asyncio event loop
-#asyncio.run(detect_faces_and_send())
+detect_faces_and_send()
+asyncio.run(detect_faces_and_send())
