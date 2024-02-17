@@ -11,35 +11,28 @@ import ChatPopup from './components/ChatPopup'; // Import your ChatPopup compone
 import { Slide } from '@chakra-ui/react';
 import { Container, Box, Flex, useDisclosure } from '@chakra-ui/react';
 
+
 const App = () => {
   const [messages, setMessages] = useState([]); // This will store the conversation
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const messageHistoryRef = useRef([]);
 
-  useEffect(() => {
-    const socket = io('ws://localhost:5000');
-  
-    socket.on('connect', () => console.log('WebSocket Connected'));
-    socket.on('connect_error', (error) => {
-      console.error('Connection Error:', error);
-    });
-    socket.on('sleepy_notification', (data) => {
-      console.log("Received sleepy_notification", data); // More detailed log
-      if (data.sleepy) {
-        console.log("User is sleepy."); // Handle sleepy notification
-      }
-    });
-    // socket.on('disconnect', () => console.log('WebSocket Disconnected'));
-  
-    // Clean up on component unmount
-    // return () => {
-    //   console.log('Cleaning up socket');
-    //   socket.off('sleepy_notification');
-    //   socket.disconnect();
-    // };
-  }, []);
 
+  // Inside your App component, add the following useEffect hook
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch('http://localhost:5000/data') // Make sure the URL matches your Flask server's endpoint
+        .then(response => response.text())
+        .then(message => {
+          console.log(message); // This will log message from the Flask server
+        })
+        .catch(error => console.error('Error fetching from Flask server:', error));
+    }, 5000); // This sets the interval to 5 seconds
+  
+    return () => clearInterval(interval); // This clears the interval when the component unmounts
+  }, []); 
   const [analysisResults] = useState({ // setAnalysisResults
     timesDistracted: 0,
     distractedDuration: '0 minutes',
