@@ -4,7 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatInput from './components/ChatInput';
 import ChatDisplay from './components/ChatDisplay';
-
+import io from 'socket.io-client';
 import ChatButton from './components/ChatButton'; // Import your ChatButton component
 import ChatPopup from './components/ChatPopup'; // Import your ChatPopup component
 import WebcamFeed from './components/WebcamFeed';
