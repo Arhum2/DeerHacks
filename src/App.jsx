@@ -1,24 +1,47 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react'; // Import useEffect here
 import { Container, Box } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import ChatInput from './components/ChatInput'; // Rename your Textinput to ChatInput
-import ChatDisplay from './components/ChatDisplay.jsx'; // This is a new component to display the chat
+import ChatInput from './components/ChatInput';
+import ChatDisplay from './components/ChatDisplay';
+import io from 'socket.io-client';
+
 
 const App = () => {
-  const [messages, setMessages] = useState([]); // This will store the conversation
-  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const messageHistoryRef = useRef([]); // Using a ref to keep track of message history
+  const messageHistoryRef = useRef([]);
+
+  useEffect(() => {
+    const socket = io('ws://localhost:5000');
+  
+    socket.on('connect', () => console.log('WebSocket Connected'));
+    socket.on('connect_error', (error) => {
+      console.error('Connection Error:', error);
+    });
+    socket.on('sleepy_notification', (data) => {
+      console.log("Received sleepy_notification", data); // More detailed log
+      if (data.sleepy) {
+        console.log("User is sleepy."); // Handle sleepy notification
+      }
+    });
+    // socket.on('disconnect', () => console.log('WebSocket Disconnected'));
+  
+    // Clean up on component unmount
+    // return () => {
+    //   console.log('Cleaning up socket');
+    //   socket.off('sleepy_notification');
+    //   socket.disconnect();
+    // };
+  }, []);
 
   const talkToChatbot = async (userMessage) => {
     setLoading(true);
-
-    // Add the user's message to the conversation history
     const updatedMessages = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
     messageHistoryRef.current = updatedMessages;
     setMessages(updatedMessages);
 
+    // Use actual values for API key and URL, or ensure your environment variables are set up correctly
     const options = {
       method: 'POST',
       headers: {
@@ -36,12 +59,12 @@ const App = () => {
       const json = await response.json();
       const botMessage = json.choices[0].message.content;
 
-      // Add the GPT-3's response to the conversation history
       messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
       setMessages(messageHistoryRef.current);
     } catch (error) {
       console.error('Error talking to chatbot:', error);
     }
+
     setLoading(false);
   };
 
@@ -49,11 +72,10 @@ const App = () => {
     <Box bg="blue.600" color="white" height="100vh" paddingTop={130}>
       <Container maxW="3xl" centerContent>
         <Header />
-        <ChatDisplay messages={messages} /> {/* This component displays the chat messages */}
+        <ChatDisplay messages={messages} />
         <ChatInput talkToChatbot={talkToChatbot} loading={loading} />
         <Footer />
       </Container>
-      {/* Other modals or UI elements as needed */}
     </Box>
   );
 };

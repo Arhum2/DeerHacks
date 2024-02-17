@@ -7,9 +7,9 @@ const Header = () => {
     <>
     <Image src={logo} alt = "logo"
     width={100} marginBottom ='1rem' />
-        <Heading color="white" marginBottom='1rem'>Study Budy</Heading>
+        <Heading color="white" marginBottom='1rem'>Study Buddy</Heading>
      <Heading /> 
-     <Text fontSize={25} textAlign='center'>Need help? Let us know!</Text>
+     <Text fontSize={25} textAlign='center'>Need help? Let us know!f</Text>
      </>
   )
 }
