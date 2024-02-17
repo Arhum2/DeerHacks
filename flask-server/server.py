@@ -12,11 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all origins for Sock
 
 def check_sleepiness():
     print('Sleepiness check thread started')  # Confirm the thread starts
-    while True:
-        time.sleep(5)
-        print('Emitting sleepy notification')  # Confirm it reaches this point
-        
-        socketio.emit('sleepy_notification', {'sleepy': True})
+    detect_faces_and_send()
 
 @app.route('/')
 def index():
