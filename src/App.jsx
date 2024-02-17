@@ -1,20 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Container, Box } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Textinput from './components/Textinput';
-import KeywordsModal from './components/KeywordsModal';
+import ChatInput from './components/ChatInput'; // Rename your Textinput to ChatInput
+import ChatDisplay from './components/ChatDisplay.jsx'; // This is a new component to display the chat
 
 const App = () => {
-
-  const [keywords, setKeywords] = useState('');
+  const [messages, setMessages] = useState([]); // This will store the conversation
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const messageHistoryRef = useRef([]); // Using a ref to keep track of message history
 
-
-  const extractKeywords = async (text) => {
+  const talkToChatbot = async (userMessage) => {
     setLoading(true);
-    setIsOpen(true);
+
+    // Add the user's message to the conversation history
+    const updatedMessages = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
+    messageHistoryRef.current = updatedMessages;
+    setMessages(updatedMessages);
 
     const options = {
       method: 'POST',
@@ -23,49 +26,36 @@ const App = () => {
         Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'text-davinci-003',
-        prompt:
-          'Extract keywords from this text. Each keyword should have the number of occurrences in this format `keyword:occurrences`. Make the first letter of every word uppercase and separate with commas:\n\n' +
-          text +
-          '',
-        temperature: 0.5,
-        max_tokens: 60,
-        top_p: 1.0,
-        frequency_penalty: 0.8,
-        presence_penalty: 0.0,
+        model: 'gpt-3.5-turbo',
+        messages: updatedMessages,
       }),
     };
 
-  const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
-  
-  const json = await response.json();
-  
-  const data = json.choices[0].text.trim();
+    try {
+      const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
+      const json = await response.json();
+      const botMessage = json.choices[0].message.content;
 
-  console.log(data);
-  setKeywords(data);
-  setLoading(false);
-
-  
+      // Add the GPT-3's response to the conversation history
+      messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
+      setMessages(messageHistoryRef.current);
+    } catch (error) {
+      console.error('Error talking to chatbot:', error);
+    }
+    setLoading(false);
   };
 
-  const closeModal = () => {
-    setIsOpen(false);
-  }
-
   return (
-    <Box bg="blue.600" color="white" height="100vh" 
-    paddingTop={130}>
-
+    <Box bg="blue.600" color="white" height="100vh" paddingTop={130}>
       <Container maxW="3xl" centerContent>
-      <Header />
-      <Footer />
-      <Textinput extractKeywords={extractKeywords}/>
+        <Header />
+        <ChatDisplay messages={messages} /> {/* This component displays the chat messages */}
+        <ChatInput talkToChatbot={talkToChatbot} loading={loading} />
+        <Footer />
       </Container>
-      <KeywordsModal keywords={keywords} loading={loading} isOpen={isOpen} closeModal={closeModal}/>
-    
+      {/* Other modals or UI elements as needed */}
     </Box>
   );
 };
 
-export default App
+export default App;
