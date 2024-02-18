@@ -28,6 +28,7 @@ def get_data():
                 data["distracted"] =  True
             else:
                 data["distracted"] = False
+            print(data)
             return jsonify(data), 200
         
     except FileNotFoundError:
@@ -77,8 +78,9 @@ def get_stats():
                         else:
                             json["distracted"] = False
                     # time distracted and distracted duration
-                    
-            print(json)
+            
+            json["distracted_percentage"] = json["distracted"] / json["count_total"]
+            json["focus_percentage"] = 1 - json["distracted_percentage"]
             return jsonify(json), 200
                 
     except FileNotFoundError:
