@@ -70,7 +70,7 @@ def get_stats():
                     # total count
                     if message.__contains__("count_total"):
                         total_frames = int(message.split(":")[1].strip())
-                        json["count_total"] =  int(total_frames/30)
+                        json["count_total"] =  int(total_frames/10)
                     # yawn
                     if message.__contains__("distracted"):
                         if (message.split(":")[1].strip() == "True"):
@@ -78,8 +78,9 @@ def get_stats():
                         else:
                             json["distracted"] = False
                     # time distracted and distracted duration
-            
-            json["distracted_percentage"] = json["distracted"] + json["count_sleep"] / json["count_total"]
+            json["count_sleep"] =  json["count_sleep"] /  json["count_total"]
+            json["count_total"] = json["count_total"]/50
+            json["distracted_percentage"] = json["count_distracted"] + json["count_sleep"] / json["count_total"]
             json["focus_percentage"] = 1 - json["distracted_percentage"]
             return jsonify(json), 200
                 
