@@ -10,13 +10,20 @@ CORS(app)  # Adjust the origin as per your React app's URL
 def get_data():
     try:
         message = ""
+        data = {}
         with open("drowsiness_log.txt", "r") as log_file:
-            message += log_file.readline().strip()
+            message = log_file.readline().strip()
             if (message.split(":")[1].strip() == "True"):
-                
-                data = {"sleepy": True}
+                data["sleepy"] =  True
             else:
-                data = {"sleepy": False}
+                data["sleepy"] = False
+            message = log_file.readline().strip()
+            if (message.split(":")[1].strip() == "True"):
+                data["bad_posture"] =  True
+            else:
+                data["bad_posture"] = False
+            data["emotion"] = log_file.readline().strip().split(":")[1].strip()
+            
             return jsonify(data), 200
     except FileNotFoundError:
         return jsonify({"error": "File not found"}), 404
