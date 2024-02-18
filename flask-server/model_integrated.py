@@ -10,6 +10,8 @@ import numpy as np
 from datetime import datetime
 from scipy.spatial import distance as dist 
 import asyncio
+import mediapipe as mp
+from deepface import DeepFace
 
 def eye_aspect_ratio(eye):
 	# Vertical eye landmarks
@@ -31,12 +33,6 @@ def mouth_aspect_ratio(mouth):
 	return MAR
 
 #all eye  and mouth aspect ratio with time
-ear_list=[]
-total_ear=[]
-mar_list=[]
-total_mar=[]
-ts=[]
-total_ts=[]
 
 def detect_faces_and_send():
     # Set up WebSocket server
@@ -48,7 +44,6 @@ def detect_faces_and_send():
     MAR_THRESHOLD = 14
 
     # Initialize two counters 
-    BLINK_COUNT = 0 
     FRAME_COUNT = 0 
 
     # Now, intialize the dlib's face detector model as 'detector' and the landmark predictor model as 'predictor'
@@ -64,111 +59,136 @@ def detect_faces_and_send():
     # Now start the video stream and allow the camera to warm-up
     print("[INFO]Loading Camera.....")
     vs = VideoStream(usePiCamera = False).start()
-    time.sleep(2) 
+    #cap = cv2.VideoCapture(0)
 
     count_sleep = 0
     count_yawn = 0 
+    count_all = 0
     # Initialize OpenCV's face detection model
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+    message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"yawn: False",
+               f"count_sleep : 0", f"count_yawn : 0", f"count_total : 0"]
+    found = False
 
+# Initialize the pose model
+    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     # Capture video from the default camera (change the parameter to your camera index if needed)
-    cap = cv2.VideoCapture(0)
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        while True: 
+            print("-1")
+            count_all += 1
+            message[6] = f"count_total: {count_all}"
+            # Extract a frame 
+            frame = vs.read()
+            # Resize the frame 
+            if frame is None:
+                print("frame doesnt exist")
+                continue
+            frame = imutils.resize(frame, width = 500)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = pose.process(frame_rgb)
+            print("0")
+            # Convert the frame to grayscale 
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            results = pose.process(frame_rgb)
+            # Detect faces 
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+            print("1")
+            for x, y, w, h in faces:
+                img = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
+                try:
+                    # Analyze face for emotion
+                    analyze = DeepFace.analyze(img, actions=['emotion'])
+                    emotion = analyze[0]['dominant_emotion']
+                    if emotion == "happy":
+                        message[2] = "emotion: happy"
+                        print("detect happy")
+                    elif emotion == "sad":
+                        message[2] = "emotion: sad"
+                        print("detect sad")
+                        
+                except Exception as e:
+                    continue
+            print("2")
+            # Draw the pose landmarks on the frame
+            if results.pose_landmarks:
+                mp_drawing.draw_landmarks(
+                    frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                left_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_SHOULDER]
+                right_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+                # Convert from normalized coordinates to pixel coordinates
+                image_height, image_width, _ = frame.shape
+                left_shoulder_x = int(left_shoulder.x * image_width)
+                left_shoulder_y = int(left_shoulder.y * image_height)
+                right_shoulder_x = int(right_shoulder.x * image_width)
+                right_shoulder_y = int(right_shoulder.y * image_height)
+                #print(left_shoulder_x, left_shoulder_y, right_shoulder_x, right_shoulder_y)
+                if abs(right_shoulder_x - left_shoulder_y) > 100:
+                    print("bad posture")
+                    found=True
+                    message[1] = "bad posture: True"
+            print("3")
+            rects = detector(frame, 1)
 
-    while True: 
+            # Now loop over all the face detections and apply the predictor 
+            for (i, rect) in enumerate(rects): 
+                shape = predictor(gray, rect)
+                # Convert it to a (68, 2) size numpy array 
+                shape = face_utils.shape_to_np(shape)
+
+                # Draw a rectangle over the detected face 
+                (x, y, w, h) = face_utils.rect_to_bb(rect) 
+
+                leftEye = shape[lstart:lend]
+                rightEye = shape[rstart:rend] 
+                mouth = shape[mstart:mend]
+                # Compute the EAR for both the eyes 
+                leftEAR = eye_aspect_ratio(leftEye)
+                rightEAR = eye_aspect_ratio(rightEye)
+
+                # Take the average of both the EAR
+                EAR = (leftEAR + rightEAR) / 2.0
+
+                # Compute the convex hull for both the eyes and then visualize it
+                leftEyeHull = cv2.convexHull(leftEye)
+                rightEyeHull = cv2.convexHull(rightEye)
+                # Draw the contours 
+
+                MAR = mouth_aspect_ratio(mouth)
+                # Check if EAR < EAR_THRESHOLD, if so then it indicates that a blink is taking place 
+                # Thus, count the number of frames for which the eye remains closed 
+                if EAR < EAR_THRESHOLD: 
+                    FRAME_COUNT += 1
+                    if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
+                        print("detected sleepy")
+                        time.sleep(5)
+                        count_sleep += 1
+                        found=True
+                        message[4] = f"count_sleep: {count_sleep}"
+                        message[0] = "sleepy:True"
+                        blink = False
+                    continue
+                            
+                else: 
+                    FRAME_COUNT = 0
         
-        # Extract a frame 
-        frame = vs.read()
-        cv2.putText(frame, "PRESS 'q' TO EXIT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 3) 
-        # Resize the frame 
-        if frame is None:
-            continue
-        
-        frame = imutils.resize(frame, width = 500)
-        # Convert the frame to grayscale 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # Detect faces 
-        rects = detector(frame, 1)
 
-        # Now loop over all the face detections and apply the predictor 
-        for (i, rect) in enumerate(rects): 
-            shape = predictor(gray, rect)
-            # Convert it to a (68, 2) size numpy array 
-            shape = face_utils.shape_to_np(shape)
-
-            # Draw a rectangle over the detected face 
-            (x, y, w, h) = face_utils.rect_to_bb(rect) 
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)	
-            # Put a number 
-            cv2.putText(frame, "Driver", (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-            leftEye = shape[lstart:lend]
-            rightEye = shape[rstart:rend] 
-            mouth = shape[mstart:mend]
-            # Compute the EAR for both the eyes 
-            leftEAR = eye_aspect_ratio(leftEye)
-            rightEAR = eye_aspect_ratio(rightEye)
-
-            # Take the average of both the EAR
-            EAR = (leftEAR + rightEAR) / 2.0
-            #live datawrite in csv
-            ear_list.append(EAR)
-            #print(ear_list)
-            
-
-            ts.append(dt.datetime.now().strftime('%H:%M:%S.%f'))
-            # Compute the convex hull for both the eyes and then visualize it
-            leftEyeHull = cv2.convexHull(leftEye)
-            rightEyeHull = cv2.convexHull(rightEye)
-            # Draw the contours 
-            cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-            cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-            cv2.drawContours(frame, [mouth], -1, (0, 255, 0), 1)
-
-            MAR = mouth_aspect_ratio(mouth)
-            mar_list.append(MAR/10)
-            # Check if EAR < EAR_THRESHOLD, if so then it indicates that a blink is taking place 
-            # Thus, count the number of frames for which the eye remains closed 
-            if EAR < EAR_THRESHOLD: 
-                FRAME_COUNT += 1
-
-                cv2.drawContours(frame, [leftEyeHull], -1, (0, 0, 255), 1)
-                cv2.drawContours(frame, [rightEyeHull], -1, (0, 0, 255), 1)
-
-                if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
-                    count_sleep += 1
-                    with open('drowsiness_log.txt', 'w') as file:
-                        file.write('Drowsiness detected!\n')
+                # Check if the person is yawning
+                if MAR > MAR_THRESHOLD:
+                    print("detected yawn")
                     time.sleep(5)
-                    with open('drowsiness_log.txt', 'w') as file:
-                        file.write('All good!\n')
-                    # Add the frame to the dataset ar a proof of drowsy driving
-                    #cv2.imwrite("dataset/frame_sleep%d.jpg" % count_sleep, frame)
-                    #playsound('sound files/alarm.mp3')
-                    #send_notice()
-                    #cv2.putText(frame, "DROWSINESS ALERT!", (270, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-            else: 
-                #if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
-                    #playsound('sound files/warning.mp3')
-                FRAME_COUNT = 0
-            #cv2.putText(frame, "EAR: {:.2f}".format(EAR), (300, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-            # Check if the person is yawning
-            if MAR > MAR_THRESHOLD:
-                count_yawn += 1
-                cv2.drawContours(frame, [mouth], -1, (0, 0, 255), 1) 
-                cv2.putText(frame, "DROWSINESS ALERT!", (270, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-                with open('drowsiness_log.txt', 'w') as file:
-                        file.write('Drowsiness detected!\n')
-                time.sleep(2)
-                with open('drowsiness_log.txt', 'w') as file:
-                    file.write('All good!\n')
+                    count_yawn += 1
+                    found=True
+                    message[5] = f"count_yawn: {count_yawn}"
+                    message[3] = "yawn: True"
+        
+            print("4")
+            with open("drowsiness_log.txt", "w") as file:
+                file.write("\n".join(message))
                 
-                # Add the frame to the dataset ar a proof of drowsy driving
-                #cv2.imwrite("dataset/frame_yawn%d.jpg" % count_yawn, frame)
-                #playsound('sound files/alarm.mp3')
-                #playsound('sound files/warning_yawn.mp3')
-                #total data collection for plotting
-    cv2.destroyAllWindows()
-    vs.stop()
-# Run the asyncio event loop
+            message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"yawn: False",
+               f"count_sleep : {count_sleep}", f"count_yawn : {count_yawn}", f"count_total : {count_all}"]
+            print("write")
+                            
 detect_faces_and_send()
-asyncio.run(detect_faces_and_send())
