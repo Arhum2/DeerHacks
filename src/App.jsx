@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'; // Import useEffect here
+﻿import { useState, useRef, useEffect } from 'react'; // Import useEffect here
 // import { Container, Box } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -17,6 +17,17 @@ const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const messageHistoryRef = useRef([]);
+
+    const initialMessages = [
+        {
+            role: "system",
+            content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding."
+        },
+        {
+            role: "user",
+            content: "I'm feeling really overwhelmed with everything right now."
+        }
+    ];
 
 
   // Inside your App component, add the following useEffect hook
@@ -67,39 +78,55 @@ const App = () => {
   //   );
   // };
 
-  const talkToChatbot = async (userMessage) => {
-    setLoading(true);
-    const updatedMessages = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
-    messageHistoryRef.current = updatedMessages;
-    setMessages(updatedMessages);
+    const talkToChatbot = async (userMessage) => {
+        setLoading(true);
 
-    // Use actual values for API key and URL, or ensure your environment variables are set up correctly
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: updatedMessages,
-      }),
+        // Define the system message to instruct the model on the desired behavior.
+        const systemMessage = {
+            role: "system",
+            content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding."
+        };
+
+        // Add the user's message to the conversation history for the UI.
+        messageHistoryRef.current = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
+        setMessages(messageHistoryRef.current);
+
+        // Construct the API request body with the system message and the conversation history.
+        const body = JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [systemMessage, ...messageHistoryRef.current],
+        });
+
+        // API request options
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+            },
+            body: body,
+        };
+
+        try {
+            // Make the API request
+            const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
+            const json = await response.json();
+
+            // Check if the response contains messages
+            if (json.choices && json.choices.length > 0) {
+                const botMessage = json.choices[0].message.content;
+                messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
+                setMessages(messageHistoryRef.current);
+            } else {
+                // Handle unexpected response structure
+                console.error('Unexpected response structure:', json);
+            }
+        } catch (error) {
+            console.error('Error talking to chatbot:', error);
+        } finally {
+            setLoading(false);
+        }
     };
-
-    try {
-      const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
-      const json = await response.json();
-      const botMessage = json.choices[0].message.content;
-
-      messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
-      setMessages(messageHistoryRef.current);
-    } catch (error) {
-      console.error('Error talking to chatbot:', error);
-    }
-
-    setLoading(false);
-  };
-
   return (
       <Box bg="blue.600" color="white" minH="100vh">
         <Header />
