@@ -14,10 +14,12 @@ import { Container, Box, Flex, useDisclosure, useToast  } from '@chakra-ui/react
 
 
 const App = () => {
-  const [messages, setMessages] = useState([]); // This will store the conversation
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const messageHistoryRef = useRef([]);
+    const [messages, setMessages] = useState([]); // This will store the conversation
+    const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const messageHistoryRef = useRef([]);
+    const prevSleepyState = useRef(false); // useRef to keep track of the previous sleepy state
+    const toast = useToast();
 
   const [isSleepy, setIsSleepy] = useState(false);
   const [prevIsSleepy, setPrevIsSleepy] = useState(false); // Previous sleepiness status
@@ -97,23 +99,23 @@ const App = () => {
     count_total: 0,
   });
 
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+    const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
-  const handleAnalysis = () => {
+    const handleAnalysis = () => {
         setIsSidebarVisible(!isSidebarVisible);
         if (!isSidebarVisible) { // Fetch stats when the sidebar becomes visible
             fetchStats();
         }
     };
 
-  // const [chatIsOpen, setChatIsOpen] = useState(false); // State to control chat popup visibility
-  //
-  // const openChat = () => setChatIsOpen(true); // Handler to open chat popup
-  // const closeChat = () => setChatIsOpen(false); // Handler to close chat popup
-  const { isOpen: chatIsOpen, onOpen: openChat, onClose: closeChat } = useDisclosure();
+    // const [chatIsOpen, setChatIsOpen] = useState(false); // State to control chat popup visibility
+    //
+    // const openChat = () => setChatIsOpen(true); // Handler to open chat popup
+    // const closeChat = () => setChatIsOpen(false); // Handler to close chat popup
+    const { isOpen: chatIsOpen, onOpen: openChat, onClose: closeChat } = useDisclosure();
 
-  const talkToChatbot = async (userMessage) => {
-    setLoading(true);
+    const talkToChatbot = async (userMessage) => {
+        setLoading(true);
 
     // Define the system message to instruct the model on the desired behavior.
     const systemMessage = {
@@ -122,67 +124,67 @@ const App = () => {
           "response, create a new line after each main point."
     };
 
-    // Add the user's message to the conversation history for the UI.
-    messageHistoryRef.current = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
-    setMessages(messageHistoryRef.current);
+        // Add the user's message to the conversation history for the UI.
+        messageHistoryRef.current = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
+        setMessages(messageHistoryRef.current);
 
-    // Construct the API request body with the system message and the conversation history.
-    const body = JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [systemMessage, ...messageHistoryRef.current],
-    });
+        // Construct the API request body with the system message and the conversation history.
+        const body = JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [systemMessage, ...messageHistoryRef.current],
+        });
 
-    // API request options
-    const options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-        },
-        body: body,
-    };
+        // API request options
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+            },
+            body: body,
+        };
 
-    try {
-        // Make the API request
-        const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
-        const json = await response.json();
+        try {
+            // Make the API request
+            const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
+            const json = await response.json();
 
-        // Check if the response contains messages
-        if (json.choices && json.choices.length > 0) {
-            const botMessage = json.choices[0].message.content;
-            messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
-            setMessages(messageHistoryRef.current);
-        } else {
-            // Handle unexpected response structure
-            console.error('Unexpected response structure:', json);
+            // Check if the response contains messages
+            if (json.choices && json.choices.length > 0) {
+                const botMessage = json.choices[0].message.content;
+                messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
+                setMessages(messageHistoryRef.current);
+            } else {
+                // Handle unexpected response structure
+                console.error('Unexpected response structure:', json);
+            }
+        } catch (error) {
+            console.error('Error talking to chatbot:', error);
+        } finally {
+            setLoading(false);
         }
-    } catch (error) {
-        console.error('Error talking to chatbot:', error);
-    } finally {
-        setLoading(false);
-    }
-};
-  return (
-      <Box bg="blue.600" color="white" minH="100vh">
-        <Header />
-        <Flex>
-          <AnalysisSidebar isVisible={isSidebarVisible} results={analysisResults} />
+    };
+    return (
+        <Box bg="blue.600" color="white" minH="100vh">
+            <Header />
+            <Flex>
+                <AnalysisSidebar isVisible={isSidebarVisible} results={analysisResults} />
 
-          <Box flex="1" minH="100vh">
-            <Container maxW="3xl" centerContent paddingTop="4rem">
-               <WebcamFeed onAnalyze={handleAnalysis} />
-              <Footer />
-            </Container>
-            <ChatButton onOpen={openChat} />
-            <ChatPopup isOpen={chatIsOpen} onClose={closeChat}>
-              <ChatDisplay messages={messages} />
-              <ChatInput talkToChatbot={talkToChatbot} loading={loading} />
-            </ChatPopup>
-            {/* Other modals or UI elements as needed */}
-          </Box>
-        </Flex>
-      </Box>
-  );
+                <Box flex="1" minH="100vh">
+                    <Container maxW="3xl" centerContent paddingTop="4rem">
+                        <WebcamFeed onAnalyze={handleAnalysis} />
+                        <Footer />
+                    </Container>
+                    <ChatButton onOpen={openChat} />
+                    <ChatPopup isOpen={chatIsOpen} onClose={closeChat}>
+                        <ChatDisplay messages={messages} />
+                        <ChatInput talkToChatbot={talkToChatbot} loading={loading} />
+                    </ChatPopup>
+                    {/* Other modals or UI elements as needed */}
+                </Box>
+            </Flex>
+        </Box>
+    );
 };
 
 export default App;
