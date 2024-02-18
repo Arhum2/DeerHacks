@@ -76,6 +76,7 @@ def detect_faces_and_send():
     # Capture video from the default camera (change the parameter to your camera index if needed)
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         while True: 
+            print("-1")
             count_all += 1
             message[6] = f"count_total: {count_all}"
             # Extract a frame 
@@ -87,11 +88,13 @@ def detect_faces_and_send():
             frame = imutils.resize(frame, width = 500)
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = pose.process(frame_rgb)
+            print("0")
             # Convert the frame to grayscale 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             results = pose.process(frame_rgb)
             # Detect faces 
             faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+            print("1")
             for x, y, w, h in faces:
                 img = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
                 try:
@@ -100,11 +103,14 @@ def detect_faces_and_send():
                     emotion = analyze[0]['dominant_emotion']
                     if emotion == "happy":
                         message[2] = "emotion: happy"
+                        print("detect happy")
                     elif emotion == "sad":
                         message[2] = "emotion: sad"
+                        print("detect sad")
                         
                 except Exception as e:
                     continue
+            print("2")
             # Draw the pose landmarks on the frame
             if results.pose_landmarks:
                 mp_drawing.draw_landmarks(
@@ -119,8 +125,10 @@ def detect_faces_and_send():
                 right_shoulder_y = int(right_shoulder.y * image_height)
                 #print(left_shoulder_x, left_shoulder_y, right_shoulder_x, right_shoulder_y)
                 if abs(right_shoulder_x - left_shoulder_y) > 100:
+                    print("bad posture")
                     found=True
                     message[1] = "bad posture: True"
+            print("3")
             rects = detector(frame, 1)
 
             # Now loop over all the face detections and apply the predictor 
@@ -153,7 +161,7 @@ def detect_faces_and_send():
                 if EAR < EAR_THRESHOLD: 
                     FRAME_COUNT += 1
                     if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
-                        
+                        print("detected sleepy")
                         count_sleep += 1
                         message[4] = f"count_sleep: {count_sleep}"
                         message[0] = "sleepy:True"
@@ -168,16 +176,19 @@ def detect_faces_and_send():
 
                 # Check if the person is yawning
                 if MAR > MAR_THRESHOLD:
+                    print("detected yawn")
                     time.sleep(5)
                     count_yawn += 1
                     found=True
                     message[5] = f"count_yawn: {count_yawn}"
                     message[3] = "yawn: True"
         
+            print("4")
             with open("drowsiness_log.txt", "w") as file:
                 file.write("\n".join(message))
                 
             message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"yawn: False",
                f"count_sleep : {count_sleep}", f"count_yawn : {count_yawn}", f"count_total : {count_all}"]
+            print("write")
                             
 detect_faces_and_send()

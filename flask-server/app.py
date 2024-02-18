@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from model_integrated import detect_faces_and_send
+# from model_integrated import detect_faces_and_send
 from threading import Thread
 
 app = Flask(__name__) 
@@ -11,8 +11,12 @@ def get_data():
     try:
         message = ""
         with open("drowsiness_log.txt", "r") as log_file:
-            message += log_file.read().strip()
-            data = {"sleepy": bool(message.split(":")[1].strip())}
+            message += log_file.readline().strip()
+            if (message.split(":")[1].strip() == "True"):
+                
+                data = {"sleepy": True}
+            else:
+                data = {"sleepy": False}
             return jsonify(data), 200
     except FileNotFoundError:
         return jsonify({"error": "File not found"}), 404
@@ -20,7 +24,7 @@ def get_data():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/stats', methods=["GET"])
-def get_data():
+def get_stats():
     try:
         with open("drowsiness_log.txt", "r") as log_file:
             for line in log_file:
@@ -72,13 +76,6 @@ def get_data():
     
 if __name__ == '__main__':
     # Start the sleepiness check in a separate thread
-    print(f"Flask server running on {app.config['SERVER_NAME']}")
+    #print(f"Flask server running on {app.config['SERVER_NAME']}")
 
     app.run(debug=True, port=5000)
-    flask_thread = Thread(target=run_flask)
-    flask_thread.start()
-
-    # Start the sleepiness check
-    detection_thread = Thread(target=run_detection)
-    detection_thread.start()
-
