@@ -121,7 +121,7 @@ def detect_faces_and_send():
             else:
                 distracted = 0
             if distracted >= CONSECUTIVE_FRAMES:
-                message[4] = "distracted: True"
+                message[3] = "distracted: True"
                 print("DISTRACTED")
                 count_distracted += 1
             print("2")
