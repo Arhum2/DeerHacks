@@ -1,40 +1,26 @@
-import { useState, useRef, useEffect } from 'react'; // Import useEffect here
+﻿import { useState, useRef, useEffect } from 'react'; // Import useEffect here
 // import { Container, Box } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatInput from './components/ChatInput';
 import ChatDisplay from './components/ChatDisplay';
-// import io from 'socket.io-client';
+import io from 'socket.io-client';
 import ChatButton from './components/ChatButton'; // Import your ChatButton component
 import ChatPopup from './components/ChatPopup'; // Import your ChatPopup component
-import WebcamFeed from './components/WebcamFeed';
-import AnalysisSidebar from './components/AnalysisSidebar';
+// import WebcamFeed from './components/WebcamFeed';
 import { Slide } from '@chakra-ui/react';
 import { Container, Box, Flex, useDisclosure } from '@chakra-ui/react';
 
 
 const App = () => {
   const [messages, setMessages] = useState([]); // This will store the conversation
-  // const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const messageHistoryRef = useRef([]);
 
-  const [analysisResults, setAnalysisResults] = useState({
-    timesDistracted: 0,
-    distractedDuration: '0 minutes',
-    focusDuration: '0 minutes',
-    sleepy: false,
-    badPosture: true,
-    emotion: 'Happy',
-    yawn: false,
-    count_sleep: 0,
-    count_yawn: 0,
-    count_total: 0,
-  });
-
 
   // Inside your App component, add the following useEffect hook
-
+  
   useEffect(() => {
     const interval = setInterval(() => {
       fetch('http://127.0.0.1:5000/data', {method:"GET", mode:'cors'}) // Make sure the URL matches your Flask server's endpoint
@@ -48,11 +34,21 @@ const App = () => {
     return () => clearInterval(interval); // This clears the interval when the component unmounts
   }, []);
 
+  const [analysisResults] = useState({ // setAnalysisResults
+    timesDistracted: 0,
+    distractedDuration: '0 minutes',
+    focusDuration: '0 minutes',
+  });
+
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const handleAnalysis = () => {
+    // For demonstration, toggle visibility without changing results
+    // In a real scenario, you might update results here as well
     setIsSidebarVisible(!isSidebarVisible);
-    // Here you would update analysisResults with actual data
+
+    // Optionally, update analysis results here if needed
+    // setAnalysisResults(newResults);
   };
 
   // const [chatIsOpen, setChatIsOpen] = useState(false); // State to control chat popup visibility
@@ -108,11 +104,17 @@ const App = () => {
       <Box bg="blue.600" color="white" minH="100vh">
         <Header />
         <Flex>
-          <AnalysisSidebar isVisible={isSidebarVisible} results={analysisResults} />
+          <Slide direction="left" in={isSidebarVisible} style={{ width: '100%', maxWidth: '20%' }}>
+            <Box p={4} color="white" bg="gray.700" minH="calc(100vh - 64px)" mt="105px">
+              <p>Times Distracted: {analysisResults.timesDistracted}</p>
+              <p>Distracted Duration: {analysisResults.distractedDuration}</p>
+              <p>Focus Duration: {analysisResults.focusDuration}</p>
+            </Box>
+          </Slide>
 
           <Box flex="1" minH="100vh">
             <Container maxW="3xl" centerContent paddingTop="4rem">
-               <WebcamFeed onAnalyze={handleAnalysis} />
+              {/* <WebcamFeed onAnalyze={handleAnalysis} /> */}
               <Footer />
             </Container>
             <ChatButton onOpen={openChat} />
