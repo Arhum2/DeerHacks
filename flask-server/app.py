@@ -78,9 +78,9 @@ def get_stats():
                         else:
                             json["distracted"] = False
                     # time distracted and distracted duration
-            json["count_sleep"] =  json["count_sleep"] /  json["count_total"]
-            json["distracted_percentage"] = (json["count_distracted"] + json["count_sleep"]) / (json["count_total"] + 1)
-            json["focus_percentage"] = 1 - json["distracted_percentage"]
+            json["count_sleep"] =  "%.2f" % (json["count_sleep"] /  json["count_total"])
+            json["distracted_percentage"] = "%.2f" % ((json["count_distracted"] + json["count_sleep"]) / (json["count_total"] + 1))
+            json["focus_percentage"] = "%.2f" % 1 - json["distracted_percentage"]
             json["count_total"] = json["count_total"]/50
             print(json)
             return jsonify(json), 200
