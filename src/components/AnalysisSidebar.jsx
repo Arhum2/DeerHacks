@@ -20,19 +20,19 @@ const AnalysisSidebar = ({ isVisible, results }) => {
             <VStack spacing={5} divider={<Divider borderColor="gray.200" />} align="start">
                 <VStack spacing={3} align="start">
                     <Stat>
-                        <StatLabel>Times Distracted</StatLabel>
-                        <StatNumber justifyContent="left">{results.timesDistracted}</StatNumber>
-                        <StatLabel>Occurrences</StatLabel>
+                        <StatLabel>Distracted Percentage</StatLabel>
+                        <StatNumber justifyContent="left">{results.distracted_percentage}</StatNumber>
+
                     </Stat>
                     <Stat>
-                        <StatLabel>Distracted Duration</StatLabel>
-                        <StatNumber justifyContent="left">{results.distractedDuration}</StatNumber>
-                        <StatLabel>Total Time</StatLabel>
+                        <StatLabel>Total Time Studying</StatLabel>
+                        <StatNumber justifyContent="left">{results.count_total + " minutes"}</StatNumber>
+
                     </Stat>
                     <Stat>
-                        <StatLabel>Focus Duration</StatLabel>
-                        <StatNumber justifyContent="left">{results.focusDuration}</StatNumber>
-                        <StatLabel>Total Time</StatLabel>
+                        <StatLabel>Focus Percentage</StatLabel>
+                        <StatNumber justifyContent="left">{results.focus_percentage}</StatNumber>
+
                     </Stat>
                 </VStack>
 
@@ -40,10 +40,6 @@ const AnalysisSidebar = ({ isVisible, results }) => {
                     <Stat>
                         <StatLabel>Sleepy</StatLabel>
                         <StatNumber justifyContent="left">{results.sleepy ? 'Yes' : 'No'}</StatNumber>
-                    </Stat>
-                    <Stat>
-                        <StatLabel>Yawn Detected</StatLabel>
-                        <StatNumber justifyContent="left">{results.yawn ? 'Yes' : 'No'}</StatNumber>
                     </Stat>
                     <Stat>
                         <StatLabel>Bad Posture</StatLabel>
@@ -55,7 +51,7 @@ const AnalysisSidebar = ({ isVisible, results }) => {
                     </Stat>
                 </VStack>
 
-                <VStack spacing={3} align="start">
+                {/* <VStack spacing={3} align="start">
                     <Stat>
                         <StatLabel>Count Sleep</StatLabel>
                         <StatNumber justifyContent="left">{results.count_sleep}</StatNumber>
@@ -68,7 +64,7 @@ const AnalysisSidebar = ({ isVisible, results }) => {
                         <StatLabel>Total Count</StatLabel>
                         <StatNumber justifyContent="left">{results.count_total}</StatNumber>
                     </Stat>
-                </VStack>
+                </VStack> */}
             </VStack>
         </Box>
     );

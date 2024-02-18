@@ -19,29 +19,46 @@ const App = () => {
     const [loading, setLoading] = useState(false);
     const messageHistoryRef = useRef([]);
     const prevSleepyState = useRef(false); // useRef to keep track of the previous sleepy state
+    const prevDistractedState = useRef(false);
     const toast = useToast();
 
     const fetchStats = async () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/stats');
             const data = await response.json();
-            setAnalysisResults(data); // Update the state with the fetched data
+            console.log(data.distracted_percentage)
+
+            // Assuming data contains the 'bad_posture' key along with other analysis results
+            setAnalysisResults(prevResults => ({
+                ...prevResults,
+                sleepy: data.sleepy,
+                badPosture: data.bad_posture, // Ensure your state variable names match the data keys or map them accordingly
+                emotion: data.emotion,
+                distracted: data.distracted,
+                count_sleep: data.count_sleep,
+                count_total: data.count_total,
+                distracted_percentage: data.distracted_percentage, // Update the badPosture state based on the fetched data
+                focus_percentage: data.focus_percentage
+                // Include other data fields as needed
+            }));
         } catch (error) {
             console.error('Error fetching stats:', error);
         }
     };
 
 
+
     // Inside your App component, add the following useEffect hook
     useEffect(() => {
         const interval = setInterval(() => {
-            fetch('http://127.0.0.1:5000/data', {method:"GET", mode:'cors'})
+            fetch('http://127.0.0.1:5000/data', { method: "GET", mode: 'cors' })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data); // Assuming 'data' contains the 'sleepy' boolean
+                    console.log(data); // Assuming 'data' contains the 'sleepy' and 'distracted' booleans
 
+                    // Handling sleepy state
                     if (data.sleepy && !prevSleepyState.current) {
-                        // Play sound
+                        // Play sound and show toast for sleepy
                         const alertSound = new Audio('/ping-82822.mp3'); // Adjust path accordingly
                         alertSound.play();
                         toast({
@@ -53,33 +70,47 @@ const App = () => {
                             position: "top",
                         });
 
-                        // Show popup notification
-                        setIsOpen(true); // Assuming setIsOpen controls the visibility of a popup
-
-                        // Update the previous sleepy state
                         prevSleepyState.current = data.sleepy;
                     } else if (!data.sleepy) {
-                        // Update the previous sleepy state when the user is no longer sleepy
                         prevSleepyState.current = false;
+                    }
+
+                    // Handling distracted state
+                    if (data.distracted && !prevDistractedState.current) {
+                        // Play sound and show toast for distracted
+                        const distractedSound = new Audio('/Hangouts_notification_sound.mp3'); // Adjust path accordingly
+                        distractedSound.play();
+                        toast({
+                            title: "You seem distracted.",
+                            description: "Try to focus!",
+                            status: "info",
+                            duration: 9000,
+                            isClosable: true,
+                            position: "top",
+                        });
+
+                        prevDistractedState.current = data.distracted;
+                    } else if (!data.distracted) {
+                        prevDistractedState.current = false;
                     }
                 })
                 .catch(error => console.error('Error fetching from Flask server:', error));
         }, 1000);
 
         return () => clearInterval(interval); // Clean up the interval
-    }, []);
+    }, [toast]);
 
     const [analysisResults, setAnalysisResults] = useState({
-        timesDistracted: 0,
-        distractedDuration: '0 minutes',
-        focusDuration: '0 minutes',
+        distracted_percentage: '0 minutes',
+        focus_percentage: '0 minutes',
         sleepy: false,
-        badPosture: true,
+        bad_posture: true,
         emotion: 'Happy',
+        distracted: false,
         yawn: false,
         count_sleep: 0,
         count_yawn: 0,
-        count_total: 0,
+        count_total: 0, count_distracted: 0
     });
 
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);

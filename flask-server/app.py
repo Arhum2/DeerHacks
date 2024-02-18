@@ -2,8 +2,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 # from model_integrated import detect_faces_and_send
 from threading import Thread
+import time
 
-app = Flask(__name__) 
+app = Flask(__name__)
 CORS(app)  # Adjust the origin as per your React app's URL
 
 @app.route('/data', methods=["GET"])
@@ -30,7 +31,7 @@ def get_data():
                 data["distracted"] = False
             print(data)
             return jsonify(data), 200
-        
+
     except FileNotFoundError:
         return jsonify({"error": "File not found"}), 404
     except Exception as e:
@@ -70,7 +71,7 @@ def get_stats():
                     # total count
                     if message.__contains__("count_total"):
                         total_frames = int(message.split(":")[1].strip())
-                        json["count_total"] =  int(total_frames/10)
+                        json["count_total"] =  int(total_frames)
                     # yawn
                     if message.__contains__("distracted"):
                         if (message.split(":")[1].strip() == "True"):
@@ -78,10 +79,12 @@ def get_stats():
                         else:
                             json["distracted"] = False
                     # time distracted and distracted duration
-            json["count_sleep"] =  json["count_sleep"] /  json["count_total"]
-            json["count_total"] = json["count_total"]/50
-            json["distracted_percentage"] = json["count_distracted"] + json["count_sleep"] / json["count_total"]
-            json["focus_percentage"] = 1 - json["distracted_percentage"]
+
+            json["count_sleep"] =  round((json["count_sleep"] /  (json["count_total"]+1)), 2)
+            json["distracted_percentage"] = round(((json["count_distracted"] + json["count_sleep"]) / (json["count_total"] + 1)), 2)
+            json["focus_percentage"] = round(1 - json["distracted_percentage"], 2)
+            json["count_total"] = json["count_total"]//150
+            print(json)
             return jsonify(json), 200
                 
     except FileNotFoundError:
