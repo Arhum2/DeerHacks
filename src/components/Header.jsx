@@ -1,5 +1,5 @@
 import { Flex, Image, Heading } from "@chakra-ui/react";
-import logo from '../assets/light-bulb.svg';
+import logo from '../assets/studbot.png';
 
 const Header = () => {
     return (
@@ -16,7 +16,7 @@ const Header = () => {
             {/* Wrap both the Image and Heading in an anchor tag */}
             <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white' }}>
                 <Image src={logo} alt="logo" boxSize="80px" marginRight="1rem" />
-                <Heading size="lg">Study Buddy</Heading>
+                <Heading size="lg">StudBot</Heading>
             </a>
         </Flex>
     );
