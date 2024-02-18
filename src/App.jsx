@@ -7,7 +7,8 @@ import ChatDisplay from './components/ChatDisplay';
 import io from 'socket.io-client';
 import ChatButton from './components/ChatButton'; // Import your ChatButton component
 import ChatPopup from './components/ChatPopup'; // Import your ChatPopup component
-// import WebcamFeed from './components/WebcamFeed';
+import WebcamFeed from './components/WebcamFeed';
+import AnalysisSidebar from './components/AnalysisSidebar';
 import { Slide } from '@chakra-ui/react';
 import { Container, Box, Flex, useDisclosure } from '@chakra-ui/react';
 
@@ -34,10 +35,17 @@ const App = () => {
     return () => clearInterval(interval); // This clears the interval when the component unmounts
   }, []);
 
-  const [analysisResults] = useState({ // setAnalysisResults
+  const [analysisResults, setAnalysisResults] = useState({
     timesDistracted: 0,
     distractedDuration: '0 minutes',
     focusDuration: '0 minutes',
+    sleepy: false,
+    badPosture: true,
+    emotion: 'Happy',
+    yawn: false,
+    count_sleep: 0,
+    count_yawn: 0,
+    count_total: 0,
   });
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -104,17 +112,11 @@ const App = () => {
       <Box bg="blue.600" color="white" minH="100vh">
         <Header />
         <Flex>
-          <Slide direction="left" in={isSidebarVisible} style={{ width: '100%', maxWidth: '20%' }}>
-            <Box p={4} color="white" bg="gray.700" minH="calc(100vh - 64px)" mt="105px">
-              <p>Times Distracted: {analysisResults.timesDistracted}</p>
-              <p>Distracted Duration: {analysisResults.distractedDuration}</p>
-              <p>Focus Duration: {analysisResults.focusDuration}</p>
-            </Box>
-          </Slide>
+          <AnalysisSidebar isVisible={isSidebarVisible} results={analysisResults} />
 
           <Box flex="1" minH="100vh">
             <Container maxW="3xl" centerContent paddingTop="4rem">
-              {/* <WebcamFeed onAnalyze={handleAnalysis} /> */}
+               <WebcamFeed onAnalyze={handleAnalysis} />
               <Footer />
             </Container>
             <ChatButton onOpen={openChat} />
