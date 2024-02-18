@@ -77,37 +77,53 @@ const App = () => {
 
   const talkToChatbot = async (userMessage) => {
     setLoading(true);
-    const updatedMessages = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
-    messageHistoryRef.current = updatedMessages;
-    setMessages(updatedMessages);
 
-    // Use actual values for API key and URL, or ensure your environment variables are set up correctly
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
+    // Define the system message to instruct the model on the desired behavior.
+    const systemMessage = {
+      role: "system",
+      content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding."
+    };
+
+    // Add the user's message to the conversation history for the UI.
+    messageHistoryRef.current = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
+    setMessages(messageHistoryRef.current);
+
+    // Construct the API request body with the system message and the conversation history.
+    const body = JSON.stringify({
         model: 'gpt-3.5-turbo',
-        messages: updatedMessages,
-      }),
+        messages: [systemMessage, ...messageHistoryRef.current],
+    });
+
+    // API request options
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: body,
     };
 
     try {
-      const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
-      const json = await response.json();
-      const botMessage = json.choices[0].message.content;
+        // Make the API request
+        const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
+        const json = await response.json();
 
-      messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
-      setMessages(messageHistoryRef.current);
+        // Check if the response contains messages
+        if (json.choices && json.choices.length > 0) {
+            const botMessage = json.choices[0].message.content;
+            messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];
+            setMessages(messageHistoryRef.current);
+        } else {
+            // Handle unexpected response structure
+            console.error('Unexpected response structure:', json);
+        }
     } catch (error) {
-      console.error('Error talking to chatbot:', error);
+        console.error('Error talking to chatbot:', error);
+    } finally {
+        setLoading(false);
     }
-
-    setLoading(false);
-  };
-
+};
   return (
       <Box bg="blue.600" color="white" minH="100vh">
         <Header />
