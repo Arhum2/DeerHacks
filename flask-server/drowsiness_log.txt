@@ -1,7 +1,7 @@
-sleepy: False
-bad posture: False
+sleepy:True
+bad posture: True
 emotion: neutral
 yawn: False
-count_sleep : 0
-count_yawn : 0
-count_total: 9
+count_sleep: 287
+count_yawn : 28
+count_total: 27386
