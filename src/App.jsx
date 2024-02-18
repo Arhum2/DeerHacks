@@ -10,7 +10,7 @@ import ChatPopup from './components/ChatPopup'; // Import your ChatPopup compone
 import WebcamFeed from './components/WebcamFeed';
 import AnalysisSidebar from './components/AnalysisSidebar';
 import { Slide } from '@chakra-ui/react';
-import { Container, Box, Flex, useDisclosure, useToast  } from '@chakra-ui/react';
+import { Container, Box, Flex, useDisclosure, useToast } from '@chakra-ui/react';
 
 
 const App = () => {
@@ -21,17 +21,9 @@ const App = () => {
     const prevSleepyState = useRef(false); // useRef to keep track of the previous sleepy state
     const toast = useToast();
 
-  const [isSleepy, setIsSleepy] = useState(false);
-  const [prevIsSleepy, setPrevIsSleepy] = useState(false); // Previous sleepiness status
-    const toast = useToast(); // Initialize the useToast hook
-
-
     const fetchStats = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:5000/stats', { method: 'GET', mode: 'cors' });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            const response = await fetch('http://127.0.0.1:5000/stats');
             const data = await response.json();
             setAnalysisResults(data); // Update the state with the fetched data
         } catch (error) {
@@ -40,64 +32,55 @@ const App = () => {
     };
 
 
-  // Inside your App component, add the following useEffect hook
-
+    // Inside your App component, add the following useEffect hook
     useEffect(() => {
         const interval = setInterval(() => {
-            fetch('http://127.0.0.1:5000/data', { method: "GET", mode: 'cors' })
+            fetch('http://127.0.0.1:5000/data', {method:"GET", mode:'cors'})
                 .then(response => response.json())
                 .then(data => {
-                    console.log("New data fetched:", data);
+                    console.log(data); // Assuming 'data' contains the 'sleepy' boolean
 
-                    // Calculate "sleepy" based on "count_sleep" and "count_yawn" conditions
-                    const isSleepy = data.count_sleep > 1 && data.count_yawn > 2;
+                    if (data.sleepy && !prevSleepyState.current) {
+                        // Play sound
+                        const alertSound = new Audio('/ping-82822.mp3'); // Adjust path accordingly
+                        alertSound.play();
+                        toast({
+                            title: "You seem tired.",
+                            description: "Get some rest!",
+                            status: "warning",
+                            duration: 9000,
+                            isClosable: true,
+                            position: "top",
+                        });
 
-                    // Update state with the new data and calculated "sleepy" status
-                    setAnalysisResults(prevResults => ({
-                        ...prevResults,
-                        ...data,
-                        sleepy: isSleepy, // Update "sleepy" based on the calculated condition
-                    }));
+                        // Show popup notification
+                        setIsOpen(true); // Assuming setIsOpen controls the visibility of a popup
+
+                        // Update the previous sleepy state
+                        prevSleepyState.current = data.sleepy;
+                    } else if (!data.sleepy) {
+                        // Update the previous sleepy state when the user is no longer sleepy
+                        prevSleepyState.current = false;
+                    }
                 })
                 .catch(error => console.error('Error fetching from Flask server:', error));
-        }, 5000); // Adjust the polling interval as needed
+        }, 1000);
 
-        return () => clearInterval(interval); // Cleanup on unmount
+        return () => clearInterval(interval); // Clean up the interval
     }, []);
 
-    useEffect(() => {
-        // Check if sleepiness status changed from false to true
-        if (isSleepy && !prevIsSleepy) {
-            const alertSound = new Audio('ping-82822.mp3'); // Replace with the actual path to your audio file
-            alertSound.play();
-
-            toast({
-                title: "You seem tired.",
-                description: "Get some rest!",
-                status: "warning",
-                duration: 15000,
-                isClosable: true,
-                position: "top",
-            });
-
-        }
-        setPrevIsSleepy(isSleepy); // Update the previous sleepiness status for the next comparison
-    }, [isSleepy, prevIsSleepy]);
-
-
-
-  const [analysisResults, setAnalysisResults] = useState({
-    timesDistracted: 0,
-    distractedDuration: '0 minutes',
-    focusDuration: '0 minutes',
-    sleepy: false,
-    badPosture: true,
-    emotion: 'Happy',
-    yawn: false,
-    count_sleep: 0,
-    count_yawn: 0,
-    count_total: 0,
-  });
+    const [analysisResults, setAnalysisResults] = useState({
+        timesDistracted: 0,
+        distractedDuration: '0 minutes',
+        focusDuration: '0 minutes',
+        sleepy: false,
+        badPosture: true,
+        emotion: 'Happy',
+        yawn: false,
+        count_sleep: 0,
+        count_yawn: 0,
+        count_total: 0,
+    });
 
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
@@ -117,12 +100,11 @@ const App = () => {
     const talkToChatbot = async (userMessage) => {
         setLoading(true);
 
-    // Define the system message to instruct the model on the desired behavior.
-    const systemMessage = {
-      role: "system",
-      content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding. In your " +
-          "response, create a new line after each main point."
-    };
+        // Define the system message to instruct the model on the desired behavior.
+        const systemMessage = {
+            role: "system",
+            content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding."
+        };
 
         // Add the user's message to the conversation history for the UI.
         messageHistoryRef.current = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
