@@ -1,7 +1,0 @@
-sleepy: False
-bad posture: True
-emotion: neutral
-yawn: False
-count_sleep : 1
-count_yawn : 0
-count_total: 228

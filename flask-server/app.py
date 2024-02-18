@@ -9,7 +9,7 @@ CORS(app)  # Adjust the origin as per your React app's URL
 @app.route('/data', methods=["GET"])
 def get_data():
     try:
-        message = "hello"
+        message = ""
         with open("drowsiness_log.txt", "r") as log_file:
             message += log_file.read().strip()
             data = {"sleepy": bool(message.split(":")[1].strip())}
@@ -64,21 +64,21 @@ def get_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def run_flask():
-    app.run(debug=True, port=5000)
+# def run_flask():
+#     app.run(debug=True, port=5000)
     
-def run_detection():
-    detect_faces_and_send()
+# def run_detection():
+#     detect_faces_and_send()
     
 if __name__ == '__main__':
     # Start the sleepiness check in a separate thread
     print(f"Flask server running on {app.config['SERVER_NAME']}")
 
     app.run(debug=True, port=5000)
-    # flask_thread = Thread(target=run_flask)
-    # flask_thread.start()
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
 
-    # # Start the sleepiness check
-    # detection_thread = Thread(target=run_detection)
-    # detection_thread.start()
+    # Start the sleepiness check
+    detection_thread = Thread(target=run_detection)
+    detection_thread.start()
 

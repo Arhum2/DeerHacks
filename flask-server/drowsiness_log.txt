@@ -4,4 +4,4 @@ emotion: neutral
 yawn: False
 count_sleep : 0
 count_yawn : 0
-count_total: 226
+count_total: 1
