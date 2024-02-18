@@ -7,3 +7,5 @@ scipy
 flask
 flask_cors
 requests
+deepface
+mediapipe

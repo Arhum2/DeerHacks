@@ -1,4 +1,7 @@
-Drowsiness detected!
-Total sleep: 12
-Total yawn: 3
-Total time: 707
+sleepy: False
+bad posture: True
+emotion: neutral
+yawn: False
+count_sleep : 0
+count_yawn : 0
+count_total: 226
