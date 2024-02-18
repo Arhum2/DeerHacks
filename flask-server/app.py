@@ -10,14 +10,26 @@ CORS(app)  # Adjust the origin as per your React app's URL
 def get_data():
     try:
         message = ""
+        data = {}
         with open("drowsiness_log.txt", "r") as log_file:
-            message += log_file.readline().strip()
+            message = log_file.readline().strip()
             if (message.split(":")[1].strip() == "True"):
-                
-                data = {"sleepy": True}
+                data["sleepy"] =  True
             else:
-                data = {"sleepy": False}
+                data["sleepy"] = False
+            message = log_file.readline().strip()
+            if (message.split(":")[1].strip() == "True"):
+                data["bad_posture"] =  True
+            else:
+                data["bad_posture"] = False
+            data["emotion"] = log_file.readline().strip().split(":")[1].strip()
+            message = log_file.readline().strip()
+            if (message.split(":")[1].strip() == "True"):
+                data["distracted"] =  True
+            else:
+                data["distracted"] = False
             return jsonify(data), 200
+        
     except FileNotFoundError:
         return jsonify({"error": "File not found"}), 404
     except Exception as e:
@@ -33,10 +45,16 @@ def get_stats():
                 if message:
                     # Sleepy
                     if message.__contains__("sleepy"):
-                        json["sleepy"] =  message.split(":")[1].strip()
+                        if (message.split(":")[1].strip() == "True"):
+                            json["sleepy"] = True
+                        else:
+                            json["sleepy"] = False
                     # bad posture
                     if message.__contains__("bad posture"):
-                        json["bad_posture"] =  message.split(":")[1].strip()
+                        if (message.split(":")[1].strip() == "True"):
+                            json["bad_posture"] = True
+                        else:
+                            json["bad_posture"] = False
                     # Emotion
                     if message.__contains__("emotion"):
                         json["emotion"] =  message.split(":")[1].strip()
@@ -45,21 +63,21 @@ def get_stats():
                         sleepy_frames = int(message.split(":")[1].strip())
                         json["count_sleep"] =  sleepy_frames
                     # count yawn
-                    if message.__contains__("count_yawn"):
+                    if message.__contains__("count_distracted"):
                         yawn_frames = int(message.split(":")[1].strip())
-                        json["count_yawn"]= yawn_frames
+                        json["count_distracted"]= yawn_frames
                     # total count
                     if message.__contains__("count_total"):
                         total_frames = int(message.split(":")[1].strip())
                         json["count_total"] =  int(total_frames/30)
                     # yawn
-                    if message.__contains__("yawn"):
-                        json["yawn"] =  message.split(":")[1].strip()
+                    if message.__contains__("distracted"):
+                        if (message.split(":")[1].strip() == "True"):
+                            json["distracted"] = True
+                        else:
+                            json["distracted"] = False
                     # time distracted and distracted duration
-            distracted_duration = (json["count_sleep"] * 5) + (json["count_yawn"] * 3)
-            total_frames = abs(json["count_total"] - distracted_duration)
-            json["time_distracted"] = int(total_frames)
-            json["distracted_duration"] = int(distracted_duration)
+                    
             print(json)
             return jsonify(json), 200
                 

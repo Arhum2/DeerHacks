@@ -2,6 +2,6 @@ sleepy:True
 bad posture: True
 emotion: neutral
 yawn: False
-count_sleep: 287
+count_sleep: 291
 count_yawn : 28
-count_total: 27386
+count_total: 27558
