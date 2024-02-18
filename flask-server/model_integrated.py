@@ -162,7 +162,6 @@ def detect_faces_and_send():
                     FRAME_COUNT += 1
                     if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
                         print("detected sleepy")
-                        
                         count_sleep += 1
                         message[4] = f"count_sleep: {count_sleep}"
                         message[0] = "sleepy:True"
