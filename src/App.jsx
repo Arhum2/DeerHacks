@@ -10,7 +10,7 @@ import ChatPopup from './components/ChatPopup'; // Import your ChatPopup compone
 import WebcamFeed from './components/WebcamFeed';
 import AnalysisSidebar from './components/AnalysisSidebar';
 import { Slide } from '@chakra-ui/react';
-import { Container, Box, Flex, useDisclosure } from '@chakra-ui/react';
+import { Container, Box, Flex, useDisclosure, useToast  } from '@chakra-ui/react';
 
 
 const App = () => {
@@ -19,21 +19,70 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const messageHistoryRef = useRef([]);
 
+  const [isSleepy, setIsSleepy] = useState(false);
+  const [prevIsSleepy, setPrevIsSleepy] = useState(false); // Previous sleepiness status
+    const toast = useToast(); // Initialize the useToast hook
+
+
+    const fetchStats = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/stats', { method: 'GET', mode: 'cors' });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setAnalysisResults(data); // Update the state with the fetched data
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    };
+
 
   // Inside your App component, add the following useEffect hook
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch('http://127.0.0.1:5000/data', {method:"GET", mode:'cors'}) // Make sure the URL matches your Flask server's endpoint
-        .then(response => response.text())
-        .then(message => {
-          console.log(message); // This will log message from the Flask server
-        })
-        .catch(error => console.error('Error fetching from Flask server:', error));
-    }, 5000); // This sets the interval to 5 seconds
 
-    return () => clearInterval(interval); // This clears the interval when the component unmounts
-  }, []);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetch('http://127.0.0.1:5000/data', { method: "GET", mode: 'cors' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("New data fetched:", data);
+
+                    // Calculate "sleepy" based on "count_sleep" and "count_yawn" conditions
+                    const isSleepy = data.count_sleep > 1 && data.count_yawn > 2;
+
+                    // Update state with the new data and calculated "sleepy" status
+                    setAnalysisResults(prevResults => ({
+                        ...prevResults,
+                        ...data,
+                        sleepy: isSleepy, // Update "sleepy" based on the calculated condition
+                    }));
+                })
+                .catch(error => console.error('Error fetching from Flask server:', error));
+        }, 5000); // Adjust the polling interval as needed
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, []);
+
+    useEffect(() => {
+        // Check if sleepiness status changed from false to true
+        if (isSleepy && !prevIsSleepy) {
+            const alertSound = new Audio('ping-82822.mp3'); // Replace with the actual path to your audio file
+            alertSound.play();
+
+            toast({
+                title: "You seem tired.",
+                description: "Get some rest!",
+                status: "warning",
+                duration: 15000,
+                isClosable: true,
+                position: "top",
+            });
+
+        }
+        setPrevIsSleepy(isSleepy); // Update the previous sleepiness status for the next comparison
+    }, [isSleepy, prevIsSleepy]);
+
+
 
   const [analysisResults, setAnalysisResults] = useState({
     timesDistracted: 0,
@@ -51,13 +100,11 @@ const App = () => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const handleAnalysis = () => {
-    // For demonstration, toggle visibility without changing results
-    // In a real scenario, you might update results here as well
-    setIsSidebarVisible(!isSidebarVisible);
-
-    // Optionally, update analysis results here if needed
-    // setAnalysisResults(newResults);
-  };
+        setIsSidebarVisible(!isSidebarVisible);
+        if (!isSidebarVisible) { // Fetch stats when the sidebar becomes visible
+            fetchStats();
+        }
+    };
 
   // const [chatIsOpen, setChatIsOpen] = useState(false); // State to control chat popup visibility
   //
@@ -65,23 +112,14 @@ const App = () => {
   // const closeChat = () => setChatIsOpen(false); // Handler to close chat popup
   const { isOpen: chatIsOpen, onOpen: openChat, onClose: closeChat } = useDisclosure();
 
-  // const MainContent = () => {
-  //   return (
-  //       <Container centerContent>
-  //         {/* ... other content ... */}
-  //         <WebcamFeed />
-  //         {/* ... other content ... */}
-  //       </Container>
-  //   );
-  // };
-
   const talkToChatbot = async (userMessage) => {
     setLoading(true);
 
     // Define the system message to instruct the model on the desired behavior.
     const systemMessage = {
       role: "system",
-      content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding."
+      content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding. In your " +
+          "response, create a new line after each main point."
     };
 
     // Add the user's message to the conversation history for the UI.
