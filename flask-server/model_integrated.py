@@ -68,6 +68,7 @@ def detect_faces_and_send():
 
     count_sleep = 0
     count_yawn = 0 
+    count_all = 0
     # Initialize OpenCV's face detection model
 
     # Capture video from the default camera (change the parameter to your camera index if needed)
@@ -87,6 +88,8 @@ def detect_faces_and_send():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Detect faces 
         rects = detector(frame, 1)
+        count_all += 1
+    
 
         # Now loop over all the face detections and apply the predictor 
         for (i, rect) in enumerate(rects): 
@@ -137,9 +140,17 @@ def detect_faces_and_send():
                     count_sleep += 1
                     with open('drowsiness_log.txt', 'w') as file:
                         file.write('Drowsiness detected!\n')
+                        file.write("Total sleep: "f"{count_sleep}\n")
+                        file.write("Total yawn: "f"{count_yawn}\n")
+                        file.write("Total time: "f"{count_all}\n")
+
                     time.sleep(5)
                     with open('drowsiness_log.txt', 'w') as file:
                         file.write('All good!\n')
+                        file.write("Total sleep: "f"{count_sleep}\n")
+                        file.write("Total yawn: "f"{count_yawn}\n")
+                        file.write("Total time: "f"{count_all}\n")
+
                     # Add the frame to the dataset ar a proof of drowsy driving
                     #cv2.imwrite("dataset/frame_sleep%d.jpg" % count_sleep, frame)
                     #playsound('sound files/alarm.mp3')
@@ -158,9 +169,20 @@ def detect_faces_and_send():
                 cv2.putText(frame, "DROWSINESS ALERT!", (270, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 with open('drowsiness_log.txt', 'w') as file:
                         file.write('Drowsiness detected!\n')
+                        file.write("Total sleep: "f"{count_sleep}\n")
+                        file.write("Total yawn: "f"{count_yawn}\n")
+                        file.write("Total time: "f"{count_all}\n")
                 time.sleep(2)
                 with open('drowsiness_log.txt', 'w') as file:
                     file.write('All good!\n')
+                 
+                 #distracted vars
+                    file.write("Total sleep: "f"{count_sleep}\n")
+                    file.write("Total yawn: "f"{count_yawn}\n")
+                    file.write("Total time: "f"{count_all}\n")
+
+
+                #non distracted vars
                 
                 # Add the frame to the dataset ar a proof of drowsy driving
                 #cv2.imwrite("dataset/frame_yawn%d.jpg" % count_yawn, frame)

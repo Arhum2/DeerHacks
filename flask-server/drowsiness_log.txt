@@ -1,1 +1,4 @@
-Drowsiness detected!
+All good!
+Total sleep: 2
+Total yawn: 3
+Total time: 82

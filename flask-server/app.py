@@ -19,6 +19,15 @@ def get_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/stats', methods=["POST"])
+def get_stats():
+    try:
+        data = request.json
+        print(data)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 def run_flask():
     app.run(debug=True, port=5000)
     
