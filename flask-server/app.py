@@ -9,7 +9,7 @@ CORS(app)  # Adjust the origin as per your React app's URL
 @app.route('/data', methods=["GET"])
 def get_data():
     try:
-        message = "hello"
+        message = ""
         with open("drowsiness_log.txt", "r") as log_file:
             message += log_file.readline().strip()
             data = {"message": message}
@@ -22,9 +22,10 @@ def get_data():
 @app.route('/stats', methods=["POST"])
 def get_stats():
     try:
-        data = request.json
-        print(data)
-        return jsonify(data), 200
+        with open('drowsiness_log.txt', 'r') as file:
+            message = file.read()
+            data = {"message": message}
+            return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
