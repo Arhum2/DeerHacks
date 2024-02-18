@@ -45,6 +45,7 @@ def detect_faces_and_send():
 
     # Initialize two counters 
     FRAME_COUNT = 0 
+    
 
     # Now, intialize the dlib's face detector model as 'detector' and the landmark predictor model as 'predictor'
     print("[INFO]Loading the predictor.....")
@@ -64,11 +65,13 @@ def detect_faces_and_send():
     count_sleep = 0
     count_yawn = 0 
     count_all = 0
+    distracted = 0
+    count_distracted = 0
     # Initialize OpenCV's face detection model
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
-    message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"yawn: False",
-               f"count_sleep : 0", f"count_yawn : 0", f"count_total : 0"]
+    message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"distracted: False", 
+               f"count_sleep : 0", f"count_yawn : 0", f"count_total : 0",]
     found = False
 
 # Initialize the pose model
@@ -95,12 +98,15 @@ def detect_faces_and_send():
             # Detect faces 
             faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
             print("1")
+            found_faces = False
             for x, y, w, h in faces:
+                found_faces = True
                 img = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
                 try:
                     # Analyze face for emotion
                     analyze = DeepFace.analyze(img, actions=['emotion'])
                     emotion = analyze[0]['dominant_emotion']
+                    print(emotion)
                     if emotion == "happy":
                         message[2] = "emotion: happy"
                         print("detect happy")
@@ -110,6 +116,14 @@ def detect_faces_and_send():
                         
                 except Exception as e:
                     continue
+            if not found_faces:
+                distracted += 1 
+            else:
+                distracted = 0
+            if distracted >= CONSECUTIVE_FRAMES:
+                message[4] = "distracted: True"
+                print("DISTRACTED")
+                count_distracted += 1
             print("2")
             # Draw the pose landmarks on the frame
             if results.pose_landmarks:
@@ -131,7 +145,7 @@ def detect_faces_and_send():
             print("3")
             rects = detector(frame, 1)
 
-            # Now loop over all the face detections and apply the predictor 
+            # Now loop over all the face detections and apply the predictor
             for (i, rect) in enumerate(rects): 
                 shape = predictor(gray, rect)
                 # Convert it to a (68, 2) size numpy array 
@@ -146,7 +160,6 @@ def detect_faces_and_send():
                 # Compute the EAR for both the eyes 
                 leftEAR = eye_aspect_ratio(leftEye)
                 rightEAR = eye_aspect_ratio(rightEye)
-
                 # Take the average of both the EAR
                 EAR = (leftEAR + rightEAR) / 2.0
 
@@ -182,13 +195,12 @@ def detect_faces_and_send():
                     found=True
                     message[5] = f"count_yawn: {count_yawn}"
                     message[3] = "yawn: True"
-        
             print("4")
             with open("drowsiness_log.txt", "w") as file:
                 file.write("\n".join(message))
                 
-            message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"yawn: False",
-               f"count_sleep : {count_sleep}", f"count_yawn : {count_yawn}", f"count_total : {count_all}"]
+            message = [f"sleepy: False", "bad posture: False", f"emotion: neutral", f"distracted: False",
+               f"count_sleep : {count_sleep}", f"count_yawn : {count_yawn}", f"count_total : {count_all}", f"count_distracted : {count_distracted}"]
             print("write")
                             
 detect_faces_and_send()
