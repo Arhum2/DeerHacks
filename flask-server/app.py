@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 # from model_integrated import detect_faces_and_send
 from threading import Thread
+import time
 
 app = Flask(__name__) 
 CORS(app)  # Adjust the origin as per your React app's URL
@@ -78,10 +79,11 @@ def get_stats():
                         else:
                             json["distracted"] = False
                     # time distracted and distracted duration
-            json["count_sleep"] =  "%.2f" % (json["count_sleep"] /  json["count_total"])
-            json["distracted_percentage"] = "%.2f" % ((json["count_distracted"] + json["count_sleep"]) / (json["count_total"] + 1))
-            json["focus_percentage"] = "%.2f" % 1 - json["distracted_percentage"]
-            json["count_total"] = json["count_total"]/50
+          
+            json["count_sleep"] =  round((json["count_sleep"] /  (json["count_total"]+1)), 2)
+            json["distracted_percentage"] = round(((json["count_distracted"] + json["count_sleep"]) / (json["count_total"] + 1)), 2)
+            json["focus_percentage"] = round(1 - json["distracted_percentage"], 2)
+            json["count_total"] = json["count_total"]//150
             print(json)
             return jsonify(json), 200
                 

@@ -1,8 +1,8 @@
-sleepy:True
+sleepy: False
 bad posture: True
 emotion: neutral
 distracted: False
-count_sleep: 116
+count_sleep : 58
 count_yawn : 0
-count_total: 3235
-count_distracted : 7
+count_total: 3746
+count_distracted : 1455
