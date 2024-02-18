@@ -10,63 +10,63 @@ const AnalysisSidebar = ({ isVisible, results }) => {
             rounded="md"
             shadow="md"
             position="fixed"
-            top="64px"
+            top="104px"
             left={isVisible ? 0 : '-300px'}
-            width="300px"
+            width="295px"
             overflow="auto"
-            transition="left 0.2s"
+            transition="left 0.6s"
             zIndex={10}
         >
-            <VStack spacing={5} divider={<Divider borderColor="gray.200" />}>
-                <VStack spacing={3}>
+            <VStack spacing={5} divider={<Divider borderColor="gray.200" />} align="start">
+                <VStack spacing={3} align="start">
                     <Stat>
                         <StatLabel>Times Distracted</StatLabel>
-                        <StatNumber>{results.timesDistracted}</StatNumber>
+                        <StatNumber justifyContent="left">{results.timesDistracted}</StatNumber>
                         <StatLabel>Occurrences</StatLabel>
                     </Stat>
                     <Stat>
                         <StatLabel>Distracted Duration</StatLabel>
-                        <StatNumber>{results.distractedDuration}</StatNumber>
+                        <StatNumber justifyContent="left">{results.distractedDuration}</StatNumber>
                         <StatLabel>Total Time</StatLabel>
                     </Stat>
                     <Stat>
                         <StatLabel>Focus Duration</StatLabel>
-                        <StatNumber>{results.focusDuration}</StatNumber>
+                        <StatNumber justifyContent="left">{results.focusDuration}</StatNumber>
                         <StatLabel>Total Time</StatLabel>
                     </Stat>
                 </VStack>
 
-                <VStack spacing={3}>
+                <VStack spacing={3} align="start">
                     <Stat>
                         <StatLabel>Sleepy</StatLabel>
-                        <StatNumber>{results.sleepy ? 'Yes' : 'No'}</StatNumber>
+                        <StatNumber justifyContent="left">{results.sleepy ? 'Yes' : 'No'}</StatNumber>
+                    </Stat>
+                    <Stat>
+                        <StatLabel>Yawn Detected</StatLabel>
+                        <StatNumber justifyContent="left">{results.yawn ? 'Yes' : 'No'}</StatNumber>
                     </Stat>
                     <Stat>
                         <StatLabel>Bad Posture</StatLabel>
-                        <StatNumber>{results.badPosture ? 'Yes' : 'No'}</StatNumber>
+                        <StatNumber justifyContent="left">{results.badPosture ? 'Yes' : 'No'}</StatNumber>
                     </Stat>
                     <Stat>
                         <StatLabel>Emotion</StatLabel>
-                        <StatNumber>{results.emotion}</StatNumber>
+                        <StatNumber justifyContent="left">{results.emotion}</StatNumber>
                     </Stat>
                 </VStack>
 
-                <VStack spacing={3}>
-                    <Stat>
-                        <StatLabel>Yawn Detected</StatLabel>
-                        <StatNumber>{results.yawn ? 'Yes' : 'No'}</StatNumber>
-                    </Stat>
+                <VStack spacing={3} align="start">
                     <Stat>
                         <StatLabel>Count Sleep</StatLabel>
-                        <StatNumber>{results.count_sleep}</StatNumber>
+                        <StatNumber justifyContent="left">{results.count_sleep}</StatNumber>
                     </Stat>
                     <Stat>
                         <StatLabel>Count Yawn</StatLabel>
-                        <StatNumber>{results.count_yawn}</StatNumber>
+                        <StatNumber justifyContent="left">{results.count_yawn}</StatNumber>
                     </Stat>
                     <Stat>
                         <StatLabel>Total Count</StatLabel>
-                        <StatNumber>{results.count_total}</StatNumber>
+                        <StatNumber justifyContent="left">{results.count_total}</StatNumber>
                     </Stat>
                 </VStack>
             </VStack>
