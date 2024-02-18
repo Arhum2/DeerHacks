@@ -79,6 +79,9 @@ def detect_faces_and_send():
         frame = vs.read()
         cv2.putText(frame, "PRESS 'q' TO EXIT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 3) 
         # Resize the frame 
+        if frame is None:
+            continue
+        
         frame = imutils.resize(frame, width = 500)
         # Convert the frame to grayscale 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

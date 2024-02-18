@@ -23,16 +23,17 @@ const App = () => {
   
   useEffect(() => {
     const interval = setInterval(() => {
-      fetch('http://localhost:5000/data') // Make sure the URL matches your Flask server's endpoint
+      fetch('https://localhost:5000/data', {method:"GET", mode:'cors'}) // Make sure the URL matches your Flask server's endpoint
         .then(response => response.text())
         .then(message => {
           console.log(message); // This will log message from the Flask server
         })
         .catch(error => console.error('Error fetching from Flask server:', error));
-    }, 5000); // This sets the interval to 5 seconds
-  
+    }, 5000000); // This sets the interval to 5 seconds
+
     return () => clearInterval(interval); // This clears the interval when the component unmounts
-  }, []); 
+  }, []);
+
   const [analysisResults] = useState({ // setAnalysisResults
     timesDistracted: 0,
     distractedDuration: '0 minutes',
