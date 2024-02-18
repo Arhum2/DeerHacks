@@ -33,10 +33,16 @@ def get_stats():
                 if message:
                     # Sleepy
                     if message.__contains__("sleepy"):
-                        json["sleepy"] =  message.split(":")[1].strip()
+                        if (message.split(":")[1].strip() == "True"):
+                            json["sleepy"] = True
+                        else:
+                            json["sleepy"] = False
                     # bad posture
                     if message.__contains__("bad posture"):
-                        json["bad_posture"] =  message.split(":")[1].strip()
+                        if (message.split(":")[1].strip() == "True"):
+                            json["bad_posture"] = True
+                        else:
+                            json["bad_posture"] = False
                     # Emotion
                     if message.__contains__("emotion"):
                         json["emotion"] =  message.split(":")[1].strip()
@@ -54,7 +60,10 @@ def get_stats():
                         json["count_total"] =  int(total_frames/30)
                     # yawn
                     if message.__contains__("yawn"):
-                        json["yawn"] =  message.split(":")[1].strip()
+                        if (message.split(":")[1].strip() == "True"):
+                            json["yawn"] = True
+                        else:
+                            json["yawn"] = False
                     # time distracted and distracted duration
             distracted_duration = (json["count_sleep"] * 5) + (json["count_yawn"] * 3)
             total_frames = abs(json["count_total"] - distracted_duration)
