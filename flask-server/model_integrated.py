@@ -162,12 +162,13 @@ def detect_faces_and_send():
                     FRAME_COUNT += 1
                     if FRAME_COUNT >= CONSECUTIVE_FRAMES: 
                         print("detected sleepy")
-                        time.sleep(5)
+                        
                         count_sleep += 1
-                        found=True
                         message[4] = f"count_sleep: {count_sleep}"
                         message[0] = "sleepy:True"
-                        blink = False
+                        with open("drowsiness_log.txt", "w") as file:
+                            file.write("\n".join(message))
+                        time.sleep(5)
                     continue
                             
                 else: 
