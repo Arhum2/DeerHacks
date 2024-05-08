@@ -17,7 +17,6 @@ const ChatPopup = ({ isOpen, onClose, children }) => {
                 <DrawerHeader>Chat with us!</DrawerHeader>
                 <DrawerBody>
                     {children}
-                    {/* Insert chat interface here, such as message display and input */}
                 </DrawerBody>
             </DrawerContent>
         </Drawer>

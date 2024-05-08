@@ -15,8 +15,8 @@ const ChatInput = ({ talkToChatbot, loading }) => { // destructuring props here
         isClosable: true,
       });
     } else {
-        talkToChatbot(text); // This matches the prop passed in App component
-        setText(''); // Clear the input after sending the message
+        talkToChatbot(text); 
+        setText(''); // Clear the input field after sending the message
     }
   };
 

@@ -14,7 +14,7 @@ import { Container, Box, Flex, useDisclosure, useToast } from '@chakra-ui/react'
 
 
 const App = () => {
-    const [messages, setMessages] = useState([]); // This will store the conversation
+    const [messages, setMessages] = useState([]); // store the conversation
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const messageHistoryRef = useRef([]);
@@ -32,17 +32,16 @@ const App = () => {
     };
 
 
-    // Inside your App component, add the following useEffect hook
     useEffect(() => {
         const interval = setInterval(() => {
             fetch('http://127.0.0.1:5000/data', {method:"GET", mode:'cors'})
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data); // Assuming 'data' contains the 'sleepy' boolean
+                    console.log(data); // 'data' contains 'sleepy' boolean
 
                     if (data.sleepy && !prevSleepyState.current) {
                         // Play sound
-                        const alertSound = new Audio('/ping-82822.mp3'); // Adjust path accordingly
+                        const alertSound = new Audio('/ping-82822.mp3'); 
                         alertSound.play();
                         toast({
                             title: "You seem tired.",
@@ -53,20 +52,20 @@ const App = () => {
                             position: "top",
                         });
 
-                        // Show popup notification
-                        setIsOpen(true); // Assuming setIsOpen controls the visibility of a popup
+                        
+                        setIsOpen(true); 
 
                         // Update the previous sleepy state
                         prevSleepyState.current = data.sleepy;
                     } else if (!data.sleepy) {
-                        // Update the previous sleepy state when the user is no longer sleepy
+                        // Update prev sleepy state when user no longer sleepy
                         prevSleepyState.current = false;
                     }
                 })
                 .catch(error => console.error('Error fetching from Flask server:', error));
         }, 1000);
 
-        return () => clearInterval(interval); // Clean up the interval
+        return () => clearInterval(interval); // Clean up interval
     }, []);
 
     const [analysisResults, setAnalysisResults] = useState({
@@ -86,31 +85,31 @@ const App = () => {
 
     const handleAnalysis = () => {
         setIsSidebarVisible(!isSidebarVisible);
-        if (!isSidebarVisible) { // Fetch stats when the sidebar becomes visible
+        if (!isSidebarVisible) { // Fetch stats when sidebar becomes visible
             fetchStats();
         }
     };
 
-    // const [chatIsOpen, setChatIsOpen] = useState(false); // State to control chat popup visibility
+    // const [chatIsOpen, setChatIsOpen] = useState(false); 
     //
-    // const openChat = () => setChatIsOpen(true); // Handler to open chat popup
-    // const closeChat = () => setChatIsOpen(false); // Handler to close chat popup
+    // const openChat = () => setChatIsOpen(true); 
+    // const closeChat = () => setChatIsOpen(false); 
     const { isOpen: chatIsOpen, onOpen: openChat, onClose: closeChat } = useDisclosure();
 
     const talkToChatbot = async (userMessage) => {
         setLoading(true);
 
-        // Define the system message to instruct the model on the desired behavior.
+        // Define the system message to instruct the model on desired behavior
         const systemMessage = {
             role: "system",
             content: "You are a helpful and empathetic assistant. Your role is to support and encourage students who are going through a stressful time. Use an informal and friendly tone, and include emojis when appropriate to convey warmth and understanding."
         };
 
-        // Add the user's message to the conversation history for the UI.
+        // Add user's message to convo history for the UI.
         messageHistoryRef.current = [...messageHistoryRef.current, { role: 'user', content: userMessage }];
         setMessages(messageHistoryRef.current);
 
-        // Construct the API request body with the system message and the conversation history.
+        // Construct API req body with system message and the convo history.
         const body = JSON.stringify({
             model: 'gpt-3.5-turbo',
             messages: [systemMessage, ...messageHistoryRef.current],
@@ -131,7 +130,7 @@ const App = () => {
             const response = await fetch(import.meta.env.VITE_OPENAI_API_URL, options);
             const json = await response.json();
 
-            // Check if the response contains messages
+            // Check if response contains messages
             if (json.choices && json.choices.length > 0) {
                 const botMessage = json.choices[0].message.content;
                 messageHistoryRef.current = [...messageHistoryRef.current, { role: 'assistant', content: botMessage }];

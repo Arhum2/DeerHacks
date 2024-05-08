@@ -4,7 +4,7 @@ import { Box, Flex, Switch, FormControl, FormLabel, Button } from '@chakra-ui/re
 const WebcamFeed = ({ onAnalyze }) => {
     const videoRef = useRef(null);
     const [stream, setStream] = useState(null);
-    const [isPlaying, setIsPlaying] = useState(true); // Correctly use useState for boolean state
+    const [isPlaying, setIsPlaying] = useState(true); 
 
     useEffect(() => {
         if (navigator.mediaDevices.getUserMedia) {

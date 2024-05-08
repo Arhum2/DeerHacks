@@ -4,7 +4,7 @@ const ChatDisplay = ({ messages }) => {
   return (
     <VStack
       width="100%"
-      maxHeight="400px" // or any other value that fits your design
+      maxHeight="400px" 
       overflowY="auto"
       padding={4}
       spacing={4}

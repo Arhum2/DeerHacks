@@ -9,9 +9,9 @@ const ChatButton = ({ onOpen }) => {
             right="1rem"
             colorScheme="teal"
             onClick={onOpen}
-            size="lg" // Set the size to 'lg' for larger size or you can use custom padding
-            p="1.5rem" // Custom padding for even larger size
-            fontSize="1.2rem" // Increase the font size if needed
+            size="lg" // use lg for now, can also use custom padding
+            p="1.5rem" 
+            fontSize="1.2rem" 
         >
             Chat with us!
         </Button>
