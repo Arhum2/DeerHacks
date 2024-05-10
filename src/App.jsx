@@ -1,12 +1,12 @@
-﻿import { useState, useRef, useEffect } from 'react'; // Import useEffect here
+﻿import { useState, useRef, useEffect } from 'react'; 
 // import { Container, Box } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatInput from './components/ChatInput';
 import ChatDisplay from './components/ChatDisplay';
 import io from 'socket.io-client';
-import ChatButton from './components/ChatButton'; // Import your ChatButton component
-import ChatPopup from './components/ChatPopup'; // Import your ChatPopup component
+import ChatButton from './components/ChatButton'; 
+import ChatPopup from './components/ChatPopup'; 
 import WebcamFeed from './components/WebcamFeed';
 import AnalysisSidebar from './components/AnalysisSidebar';
 import { Slide } from '@chakra-ui/react';
